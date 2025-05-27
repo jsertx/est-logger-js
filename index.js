@@ -1,6 +1,6 @@
 const getLogger = require("./src/factory")
-const { sentryTransporter } = require('./src/sentry.transport')
-const { consoleTransporter } = require('./src/console.transport')
+const { sentryTransporter } = require('./src/transports/sentry.transport')
+const { consoleTransporter } = require('./src/transports/console.transport')
 
 module.exports = {
   getLogger,

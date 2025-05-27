@@ -1,6 +1,6 @@
 const { Writable } = require('stream')
 const Sentry = require('@sentry/node')
-const { PINO_LVL } = require('./misc')
+const { PINO_LVL } = require('../misc')
 
 /**
  * @param {Object} options
