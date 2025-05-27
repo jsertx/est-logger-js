@@ -5,15 +5,17 @@ const { PINO_LVL } = require('./misc')
 /**
  * @param {Object} options
  * @param {string} options.dsn
+ * @param {string} [options.environment]
  * @param {string} [options.level]
  * @param {boolean} [options.enableLogs]
  * @returns 
  */
-const sentryTransporter = ({ level, dsn, enableLogs}) => {
+const sentryTransporter = ({ level, dsn, environment, enableLogs}) => {
     return {
         target: require.resolve('./sentry.transport.js'),
         level: level || 'error',
         options: {
+            environment,
             dsn,
             _experiments: { enableLogs }
         }
@@ -31,11 +33,11 @@ const buildSentryTransporter = (opts) => {
                     if (err && err.stack) {
                         const error = new Error(err.message || msg || 'Captured error')
                         error.stack = err.stack
-                        Sentry.captureException(error, { extra })
+                        Sentry.captureException(error, { extra, level })
                     } else if (stack) {
                         const error = new Error(msg || 'Captured error')
                         error.stack = stack
-                        Sentry.captureException(error, { extra })
+                        Sentry.captureException(error, { extra, level })
                     } else {
                         Sentry.captureMessage(msg || 'Error', 'error')
                     }
