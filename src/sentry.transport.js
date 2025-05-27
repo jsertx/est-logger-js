@@ -28,21 +28,22 @@ const buildSentryTransporter = (opts) => {
         objectMode: true,
         write(log, enc, cb) {
             try {
-                const { level, msg, err, stack, ...extra } = JSON.parse(log)
-                if (level >= PINO_LVL.warn) {
+                const { level: pinoLevel, msg, err, stack, ...extra } = JSON.parse(log)
+                if (pinoLevel >= PINO_LVL.error) {
+                    const level = PINO_LVL[pinoLevel]
                     if (err && err.stack) {
                         const error = new Error(err.message || msg || 'Captured error')
                         error.stack = err.stack
-                        Sentry.captureException(error, { extra, level })
+                        Sentry.captureException(error, { extra, level: level })
                     } else if (stack) {
                         const error = new Error(msg || 'Captured error')
                         error.stack = stack
-                        Sentry.captureException(error, { extra, level })
+                        Sentry.captureException(error, { extra, level: level })
                     } else {
                         Sentry.captureMessage(msg || 'Error', 'error')
                     }
                 }
-                const logMethod = PINO_LVL[level]
+                const logMethod = PINO_LVL[pinoLevel]
                 if(logMethod) {
                     Sentry.logger[logMethod](msg, { err, ...extra })
                 }
