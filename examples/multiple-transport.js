@@ -15,11 +15,11 @@ const logger = getLogger({
 
 const server = createServer((req, res) => {
     const { method, url } = req
-    logger.info({ method, url }, `${method} ${url}`)
-    logger.info('Just text', 'splited')
+    logger.info({ method, url }, `Request to ${method} ${url}`)
+    logger.info('Just text')
     logger.warn('watch out')
-    logger.error(new Error('WHY?'))
-    logger.fatal(new Error('FATALITY'), 'something fatal happened')
+    logger.error(new Error('AN_ERROR'))
+    logger.fatal(new Error('A_FATAL_ERROR'), 'something fatal happened')
     setTimeout(() => {
         new Promise((resolve, reject) => {
             reject(new Error('UNHANDLED'))
