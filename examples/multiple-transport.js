@@ -1,6 +1,7 @@
 
 const { createServer } = require("node:http")
 const { getLogger, sentryTransporter, consoleTransporter } = require("../")
+const { v4 } = require("uuid")
 
 const logger = getLogger({
     transports: [
@@ -15,11 +16,14 @@ const logger = getLogger({
 
 const server = createServer((req, res) => {
     const { method, url } = req
+    const userId =  v4()
     logger.info({ method, url }, `Request to ${method} ${url}`)
+    logger.warn({ method, url, user: { id: userId } }, `Accessing forbidden place`)
     logger.info('Just text')
     logger.warn('watch out')
     logger.error(new Error('AN_ERROR'))
     logger.fatal(new Error('A_FATAL_ERROR'), 'something fatal happened')
+    logger.fatal({ user: { id: userId }}, new Error('A_FATAL_ERROR'), 'something fatal happened')
     setTimeout(() => {
         new Promise((resolve, reject) => {
             reject(new Error('UNHANDLED'))
