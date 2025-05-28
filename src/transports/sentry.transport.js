@@ -2,6 +2,7 @@ const { Writable } = require('stream')
 const Sentry = require('@sentry/node')
 const { PINO_LVL } = require('../misc')
 
+const DEF_ERR_MSG = 'Undefined error'
 /**
  * @param {Object} options
  * @param {string} options.dsn
@@ -32,15 +33,15 @@ const buildSentryTransporter = (opts) => {
                 if (pinoLevel >= PINO_LVL.error) {
                     const level = PINO_LVL[pinoLevel]
                     if (err && err.stack) {
-                        const error = new Error(err.message || msg || 'Captured error')
+                        const error = new Error(err.message || msg || DEF_ERR_MSG)
                         error.stack = err.stack
-                        Sentry.captureException(error, { extra, level: level })
+                        Sentry.captureException(error, { extra, level })
                     } else if (stack) {
-                        const error = new Error(msg || 'Captured error')
+                        const error = new Error(msg || DEF_ERR_MSG)
                         error.stack = stack
-                        Sentry.captureException(error, { extra, level: level })
+                        Sentry.captureException(error, { extra, level })
                     } else {
-                        Sentry.captureMessage(msg || 'Error', 'error')
+                        Sentry.captureMessage(msg || DEF_ERR_MSG, level)
                     }
                 }
                 const logMethod = PINO_LVL[pinoLevel]
