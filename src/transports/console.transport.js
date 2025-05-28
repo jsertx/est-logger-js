@@ -2,7 +2,6 @@
  * 
  * @param {Object} options
  * @param {string} [options.level] default info
- * @returns 
  */
 const consoleTransporter = ({ level } = {}) => {
     return {

@@ -6,17 +6,16 @@ const DEF_ERR_MSG = 'Undefined error'
 /**
  * @param {Object} options
  * @param {string} options.dsn
- * @param {string} [options.environment]
+ * @param {string} [options.environment] default to "local" to avoid poluting production
  * @param {string} [options.level]
  * @param {boolean} [options.enableLogs]
- * @returns 
  */
 const sentryTransporter = ({ level, dsn, environment, enableLogs}) => {
     return {
         target: require.resolve('./sentry.transport.js'),
         level: level || 'error',
         options: {
-            environment,
+            environment: environment || "local",
             dsn,
             _experiments: { enableLogs }
         }
@@ -29,25 +28,29 @@ const buildSentryTransporter = (opts) => {
         objectMode: true,
         write(log, enc, cb) {
             try {
-                const { level: pinoLevel, msg, err, stack, ...extra } = JSON.parse(log)
-                if (pinoLevel >= PINO_LVL.error) {
-                    const level = PINO_LVL[pinoLevel]
+                const { level: levelNum, msg, err, stack, ...extra } = JSON.parse(log)
+                const level = PINO_LVL[levelNum]
+                let user
+                if(typeof extra?.user === 'object') {
+                    const { id, username } = extra?.user
+                    user = { id, username }
+                    delete extra?.user
+                }
+                if (levelNum >= PINO_LVL.error) {
                     if (err && err.stack) {
                         const error = new Error(err.message || msg || DEF_ERR_MSG)
                         error.stack = err.stack
-                        Sentry.captureException(error, { extra, level })
+                        Sentry.captureException(error, { extra, level, user })
                     } else if (stack) {
                         const error = new Error(msg || DEF_ERR_MSG)
                         error.stack = stack
-                        Sentry.captureException(error, { extra, level })
+                        Sentry.captureException(error, { extra, level, user })
                     } else {
-                        Sentry.captureMessage(msg || DEF_ERR_MSG, level)
+                        Sentry.captureMessage(msg || DEF_ERR_MSG, { extra, level, user })
                     }
                 }
-                const logMethod = PINO_LVL[pinoLevel]
-                if(logMethod) {
-                    Sentry.logger[logMethod](msg, { err, ...extra })
-                }
+                let logMethod = Sentry.logger[level] || Sentry.logger.info
+                logMethod(msg, { err, ...extra })
                 cb()
             } catch (e) {
                 console.error(e)
