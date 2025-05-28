@@ -61,5 +61,6 @@ const buildSentryTransporter = (opts) => {
 }
 
 
+// pino requires default export of the transporter
 buildSentryTransporter.sentryTransporter = sentryTransporter
 module.exports = buildSentryTransporter
