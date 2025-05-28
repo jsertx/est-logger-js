@@ -109,10 +109,10 @@ class Logger {
  * @param {Array} params.transports 
  * @returns {Logger}
  */
-const factory = ({ transports }) => {
+const createLogger = ({ transports }) => {
   const transport = pino.transport({ targets: transports })
   const logger = pino(transport)
   return new Logger(logger)
 }
 
-module.exports = factory
+module.exports = createLogger

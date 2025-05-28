@@ -1,9 +1,9 @@
 
 const { createServer } = require("node:http")
-const { getLogger, sentryTransporter, consoleTransporter } = require("../")
+const { createLogger, sentryTransporter, consoleTransporter } = require("../")
 const { v4 } = require("uuid")
 
-const logger = getLogger({
+const logger = createLogger({
     transports: [
         consoleTransporter(),
         sentryTransporter({
