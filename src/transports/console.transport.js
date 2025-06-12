@@ -1,13 +1,15 @@
 /**
  * 
- * @param {Object} options
- * @param {string} [options.level] default info
+ * @param {{ level: string } & import("pino-pretty").PrettyOptions} options
  */
-const consoleTransporter = ({ level } = {}) => {
+const consoleTransporter = ({ level, ...targetOptions } = {}) => {
     return {
         target: 'pino-pretty',
         level: level || 'info',
-        options: {},
+        options: {
+            translateTime: 'yyyy-mm-dd HH:MM:ss.l',
+            ...targetOptions
+        },
     }
 }
 
