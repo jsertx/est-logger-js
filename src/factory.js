@@ -3,6 +3,7 @@ const pino = require('pino')
 /**
  * @typedef {Object} Context
  * @property {Error} [err] error that you want to log
+ * @property {Record<string, any>} [tags] kv to seach logs
  * @property {Object} [user] pruse this variable to reference log to an especific user
  * @property {string} [user.id]
  * @property {string} [user.username]

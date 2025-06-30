@@ -28,7 +28,7 @@ const buildSentryTransporter = (opts) => {
         objectMode: true,
         write(log, enc, cb) {
             try {
-                const { level: levelNum, msg, err, stack, ...extra } = JSON.parse(log)
+                const { level: levelNum, msg, err, stack, tags, ...extra } = JSON.parse(log)
                 const level = PINO_LVL[levelNum]
                 let user
                 if(typeof extra?.user === 'object') {
@@ -50,7 +50,7 @@ const buildSentryTransporter = (opts) => {
                     }
                 }
                 let logMethod = Sentry.logger[level] || Sentry.logger.info
-                logMethod(msg, { err, ...extra })
+                logMethod(msg, { err, tags, ...extra })
                 cb()
             } catch (e) {
                 console.error(e)
