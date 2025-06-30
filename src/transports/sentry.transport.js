@@ -40,11 +40,11 @@ const buildSentryTransporter = (opts) => {
                     if (err && err.stack) {
                         const error = new Error(err.message || msg || DEF_ERR_MSG)
                         error.stack = err.stack
-                        Sentry.captureException(error, { extra, level, user })
+                        Sentry.captureException(error, { extra, tags, level, user })
                     } else if (stack) {
                         const error = new Error(msg || DEF_ERR_MSG)
                         error.stack = stack
-                        Sentry.captureException(error, { extra, level, user })
+                        Sentry.captureException(error, { extra, tags, level, user })
                     } else {
                         Sentry.captureMessage(msg || DEF_ERR_MSG, { extra, level, user })
                     }
