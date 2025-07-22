@@ -9,6 +9,10 @@ const pino = require('pino')
  */
 
 class Logger {
+  /**
+   * 
+   * @param {pino.BaseLogger} instance 
+   */
   constructor(instance) {
     this.instance = instance
   }
@@ -24,7 +28,7 @@ class Logger {
    * logger.debug({ foo: 'bar', whatever: 'yes' }, 'Debugging status')
    */
   debug (msgOrContext, message) {
-    this.instance.info(msgOrContext, message)
+    this.instance.debug(msgOrContext, message)
   }
 
   /**
