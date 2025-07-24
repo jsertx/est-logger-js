@@ -110,12 +110,13 @@ class Logger {
 /**
  * 
  * @param {Object} params
+ * @param {string} [params.debug] global level
  * @param {Array} params.transports 
  * @returns {Logger}
  */
-const createLogger = ({ transports }) => {
+const createLogger = ({ level = 'debug', transports }) => {
   const transport = pino.transport({ targets: transports })
-  const logger = pino(transport)
+  const logger = pino({ level }, transport)
   return new Logger(logger)
 }
 

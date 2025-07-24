@@ -1,5 +1,6 @@
 
 const PINO_LVL = {
+    debug: 20,
     info: 30,
     warn: 40,
     error: 50,
