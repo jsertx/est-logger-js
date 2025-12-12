@@ -1,10 +1,10 @@
 {
   "name": "est-logger-js",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "lint:fix": "standard --fix"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
     "pino-pretty": "13.0.0"
   },
   "devDependencies": {
-    "uuid": "11.1.0"
+    "uuid": "11.1.0",
+    "standard": "17.0.0"
   }
 }
