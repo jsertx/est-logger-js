@@ -44,6 +44,11 @@ const sanitizeLogObject = (value, seen = new WeakSet()) => {
   if (value.constructor.name === 'AxiosError') {
     return redactAxiosError(value)
   }
+
+  if (value instanceof Error) {
+    return value
+  }
+
   // Array
   if (Array.isArray(value)) {
     return value.map(v => sanitizeLogObject(v, seen))
