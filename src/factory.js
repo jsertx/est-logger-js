@@ -9,17 +9,17 @@ const pino = require('pino')
  */
 
 class Logger {
-  constructor(instance) {
+  constructor (instance) {
     this.instance = instance
   }
 
   /**
    * @param {string | Context} msgOrContext Pass context object or the message
    * @param {string} [message] Ignored if first argument is string
-   * @example 
+   * @example
    * // with message
    * logger.debug('Debugging status')
-   * @example 
+   * @example
    * // context and message
    * logger.debug({ foo: 'bar', whatever: 'yes' }, 'Debugging status')
    */
@@ -30,10 +30,10 @@ class Logger {
   /**
    * @param {string | Context} msgOrContext Pass context object or the message
    * @param {string} [message] Ignored if first argument is string
-   * @example 
+   * @example
    * // with message
    * logger.info('Too many event listeners')
-   * @example 
+   * @example
    * // context and message
    * logger.info({ event: 'completed' }, 'Too many event listeners')
    */
@@ -44,10 +44,10 @@ class Logger {
   /**
    * @param {string | Context} msgOrContext Pass context object or the message
    * @param {string} [message] Ignored if first argument is string
-   * @example 
+   * @example
    * // with message
    * logger.warn('Too many event listeners')
-   * @example 
+   * @example
    * // context and message
    * logger.warn({ event: 'completed' }, 'Too many event listeners')
    */
@@ -58,19 +58,19 @@ class Logger {
   /**
    * @param {string | Context | Error} msgOrContextOrError Pass context obj with "err", the error itself, or a message
    * @param {string} [message] Ignored if first argument is string
-   * @example 
+   * @example
    * // with message
    * logger.error('No permission')
-   * @example 
+   * @example
    * // just error
    * logger.error(new Error('FORBIDDEN'))
-   * @example 
+   * @example
    * // error with context
    * logger.error({ err: new Error('FORBIDDEN'), userId: 1234 })
-   * @example 
+   * @example
    * // error with context and custom message
    * logger.error({ err: new Error('FORBIDDEN'), userId: 1234 }, 'No permission')
-   * @example 
+   * @example
    * // error and message
    * logger.error(new Error('FORBIDDEN'), 'No permission')
    */
@@ -81,19 +81,19 @@ class Logger {
   /**
    * @param {string | Context | Error} msgOrContextOrError Pass context obj with "err", the error itself, or a message
    * @param {string} [message] Ignored if first argument is string
-   * @example 
+   * @example
    * // with message
    * logger.fatal('Database is down')
-   * @example 
+   * @example
    * // just error
    * logger.fatal(new Error('FACILITY_DOWN'))
-   * @example 
+   * @example
    * // error with context
    * logger.fatal({ err: new Error('FACILITY_DOWN'), name: 'db-mysql' })
-   * @example 
+   * @example
    * // error with context and custom message
    * logger.fatal({ err: new Error('FACILITY_DOWN'), name: 'db-mysql' }, 'Database is down')
-   * @example 
+   * @example
    * // error and message
    * logger.fatal(new Error('FACILITY_DOWN'), 'Database is down')
    */
@@ -102,11 +102,10 @@ class Logger {
   }
 }
 
-
 /**
- * 
+ *
  * @param {Object} params
- * @param {Array} params.transports 
+ * @param {Array} params.transports
  * @returns {Logger}
  */
 const createLogger = ({ transports }) => {

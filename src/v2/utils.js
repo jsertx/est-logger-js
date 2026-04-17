@@ -3,28 +3,32 @@
 /**
  * @param {Error} err
  */
-const makeErrorSafe = (err) => {
-  let safeErr = {
-    type: err?.constructor.name,
-    message: err.message
+const redactAxiosError = (err) => {
+  if (err?.constructor.name !== 'AxiosError') return err
+
+  const redacted = Object.create(Object.getPrototypeOf(err))
+  Object.defineProperties(redacted, Object.getOwnPropertyDescriptors(err))
+
+  redacted.method = err.config?.method
+  redacted.url = err.config?.url && sanitizeUrl(err.config.url)
+  if (err.config?.headers) {
+    redacted.headers = Object.fromEntries(
+      Object.entries(err.config.headers)
+        .map(([k,v]) => [k, '*'.repeat(v?.toString().length || 1)])
+    )
+
   }
-  if (safeErr.type === 'AxiosError') {
-    safeErr = {
-      ...safeErr,
-      code: err.code,
-      request: err.config && {
-        method: err.config.method,
-        url: sanitizeUrl(err.config.url),
-        timeout: err.config.timeout
-      },
-      response: err.response && {
-        data: err.response.data,
-        status: err.response.status,
-        statusText: err.response.statusText
-      }
-    }
+  redacted.timeout = err.config?.timeout
+  redacted.response = err.response && {
+    data: err.response.data,
+    status: err.response.status,
+    statusText: err.response.statusText
   }
-  return safeErr
+
+  delete redacted.request
+  delete redacted.config
+
+  return redacted
 }
 
 const sanitizeLogObject = (value, seen = new WeakSet()) => {
@@ -37,10 +41,9 @@ const sanitizeLogObject = (value, seen = new WeakSet()) => {
   }
   seen.add(value)
 
-  if (value instanceof Error) {
-    return makeErrorSafe(value)
+  if (value.constructor.name === 'AxiosError') {
+    return redactAxiosError(value)
   }
-
   // Array
   if (Array.isArray(value)) {
     return value.map(v => sanitizeLogObject(v, seen))
@@ -58,7 +61,9 @@ const sanitizeLogObject = (value, seen = new WeakSet()) => {
 const sanitizeUrl = (url) => {
   try {
     const u = new URL(url)
-    u.search = ''
+    for (const key of u.searchParams.keys()) {
+      u.searchParams.set(key, '[REDACTED]')
+    }
     return u.toString()
   } catch {
     return url

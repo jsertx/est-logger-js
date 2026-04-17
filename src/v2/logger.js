@@ -1,17 +1,21 @@
 'use strict'
 const { isString, cloneDeep } = require('lodash')
-const { default: pino } = require('pino')
+const pino = require('pino')
 const { sanitizeLogObject } = require('./utils')
-const { sentryTarget } = require('./sentry.target')
+
 /**
  * @typedef {Object} Context
  * @property {Error} [err] error that you log
+ * @property {object} [user] error that you log
+ * @property {object} [user.id] error that you log
+ * @property {object} [user.username] error that you log
  */
 
 class Logger {
   /**
    * @param {object} params
    * @param {string} params.environment
+   * @param {string} params.release
    * @param {boolean} params.silenceLogs
    * @param {()=>object} [params.getContext]
    * @param {Record<string, any>} params.labels
@@ -22,40 +26,44 @@ class Logger {
     this.silenceLogs = params.silenceLogs
     this.labels = {
       env: params.environment,
+      release: params.release,
       ...(params.labels || {})
     }
 
     this.instance = pino({
+      redact: {
+        paths: params.redactPaths || [],
+        censor: '[REDACTED]'
+      },
       formatters: {
         level: (label) => ({ level: label })
       }
     })
-    this.sentryLogger = null
+
     if (params.sentryDsn) {
-      const transport = pino.transport({
-        targets: [
-          sentryTarget({
-            environment: params.environment,
-            dsn: params.sentryDsn
-          })
-        ]
+      this.Sentry = require('@sentry/node')
+      this.Sentry.init({
+        environment: params.environment,
+        dsn: params.sentryDsn,
+        release: params.release,
+        integrations: [
+          this.Sentry.extraErrorDataIntegration()
+        ],
+        normalizeDepth: 6
       })
-      this.sentryLogger = pino(transport)
     }
   }
 
-  _log (method, objOrMsg, ...args) {
+  _log (level, objOrMsg, msg = '') {
     if (this.silenceLogs) return
     let obj = {}
-    let msg = ''
-    if (isString(objOrMsg)) { // all are strings
-      msg = [objOrMsg, ...args].join(' ')
+
+    if (objOrMsg instanceof Error) {
+      obj = { err: objOrMsg }
+    } else if (isString(objOrMsg)) {
+      msg = objOrMsg
     } else {
       obj = objOrMsg
-      msg = args.join(' ')
-    }
-    if (obj instanceof Error) {
-      obj = { err: obj }
     }
 
     const context = this.getContext ? this.getContext() : {}
@@ -65,7 +73,34 @@ class Logger {
       ...this.labels
     })
 
-    return this.instance[method](obj, msg)
+    this.instance[level](obj, msg)
+
+    if (this.Sentry && (level === 'error' || level === 'fatal')) {
+      this._sentryCaptureException(level, obj, msg)
+    }
+  }
+
+  _sentryCaptureException (level, obj, msg) {
+    if (!this.Sentry) return
+
+    try {
+      const { err, ...extra } = obj
+      let user
+      if (typeof extra.user === 'object') {
+        const { id, username } = extra.user
+        user = { id, username }
+        delete extra.user
+      }
+      if (err) {
+        this.Sentry.captureException(err, { extra, level, user })
+      } else {
+        this.Sentry.captureMessage(msg || 'EMPTY ERROR RECEIVED', { extra, level, user })
+      }
+    } catch (captureErr) {
+      this.Sentry.captureException(captureErr, {
+        extra: { loggerHandlerError: true }
+      })
+    }
   }
 
   /**
@@ -79,7 +114,7 @@ class Logger {
    * logger.debug({ foo: 'bar', whatever: 'yes' }, 'Debugging status')
    */
   debug (msgOrContext, message) {
-    this._log('info', msgOrContext, message)
+    this._log('debug', msgOrContext, message)
   }
 
   /**
@@ -131,9 +166,6 @@ class Logger {
    */
   error (msgOrContextOrError, message) {
     this._log('error', msgOrContextOrError, message)
-    if (this.sentryLogger) {
-      this.sentryLogger.error(msgOrContextOrError, message)
-    }
   }
 
   /**
@@ -157,9 +189,6 @@ class Logger {
    */
   fatal (msgOrContextOrError, message) {
     this._log('fatal', msgOrContextOrError, message)
-    if (this.sentryLogger) {
-      this.sentryLogger.error(msgOrContextOrError, message)
-    }
   }
 }
 
